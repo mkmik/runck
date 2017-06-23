@@ -1,0 +1,85 @@
+#!/bin/sh
+
+set -e
+
+# parse arguments
+url=""
+checksum=""
+cmd=""
+while [ "$#" -gt 0 ] ; do
+  case "$1" in
+    -u|--url)
+      url=$2
+      shift 2
+      ;;
+    -c|--checksum)
+      checksum=$2
+      shift 2
+      ;;
+    -C|--cmd)
+      cmd=$2
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# determine temporary file
+if command -v mktemp >/dev/null 2>/dev/null ; then
+  tmpfile=$(mktemp)
+else
+  # fallback
+  tmpfile=${TMPDIR:-/tmp}/runck-$$-$(date +%S)
+fi
+
+cleanup() {
+  rm -f "${tmpfile}"
+}
+
+# some shells treat EXIT as a catch all, others execute it during normal exits from the shell, requiring to handle all signals explicitly.
+trap cleanup EXIT INT TERM
+
+# download the content or pass stdin through
+retrieve() {
+  if [ "x${url}" = "x" ] ; then
+    cat
+  elif command -v curl >/dev/null 2>/dev/null ; then
+    if tty -s ; then
+      curl_options="-sSL#"
+    else
+      curl_options="-sSL"
+    fi
+    curl ${curl_options} "${url}"
+  else
+    wget -O- -q "${url}"
+  fi
+}
+
+# validate checksum
+validate() {
+  if [ "x${checksum}" != "x" ] ; then
+    checksum=$(echo ${checksum} | sed 's/^sha256://')
+    echo CK=$checksum
+    echo "${checksum}  ${tmpfile}" | sha256sum -c -
+  fi
+}
+
+# run
+launch() {
+  # make executable if not running it via any command/shell
+  if [ "x${cmd}" = "x" ] ; then
+    chmod 0755 "${tmpfile}"
+  fi
+
+  ${cmd} "${tmpfile}" "$@"
+}
+
+retrieve >${tmpfile}
+validate
+launch "$@"
