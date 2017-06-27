@@ -67,9 +67,9 @@ retrieve() {
     cat
   elif command -v curl >/dev/null 2>/dev/null ; then
     if tty -s ; then
-      curl_options="-sSL#"
+      curl_options="-sSLf#"
     else
-      curl_options="-sSL"
+      curl_options="-sSLf"
     fi
     curl ${curl_options} "${url}"
   else
