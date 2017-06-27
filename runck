@@ -41,6 +41,7 @@ while [ "$#" -gt 0 ] ; do
       break
       ;;
     *)
+      shift
       break
       ;;
   esac
