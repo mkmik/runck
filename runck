@@ -1,13 +1,29 @@
 #!/bin/sh
-
 set -e
+
+printUsage() {
+  cat << EOF
+Usage: ${0##*/} [-u|--url url] [-c|--checksum checksum] [-C|--cmd command] -- [args]
+A script that can download a file, verify its checksum and execute it
+    -h, --help      Print this usage page
+    -u, --url       Url of the file you want to check
+    -c, --checksum  SHA256 checksum to check against
+    -C, --cmd       Interpreter to execute the file with
+    args            Arguments for the command you want to execute
+EOF
+}
 
 # parse arguments
 url=""
 checksum=""
 cmd=""
+
 while [ "$#" -gt 0 ] ; do
   case "$1" in
+    -h|--help)
+        printUsage
+        exit 0
+        ;;
     -u|--url)
       url=$2
       shift 2
