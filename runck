@@ -54,6 +54,15 @@ else
   tmpfile=${TMPDIR:-/tmp}/runck-$$-$(date +%S)
 fi
 
+if [ -t 0 ]; then
+    if [ "x${url}" = "x" ]; then
+        echo "Interactive mode and no url was specified"
+        echo ""
+        printUsage
+        exit 1
+    fi
+fi
+
 cleanup() {
   rm -f "${tmpfile}"
 }
@@ -92,6 +101,8 @@ launch() {
   if [ "x${cmd}" = "x" ] ; then
     chmod 0755 "${tmpfile}"
   fi
+
+  echo ""
 
   ${cmd} "${tmpfile}" "$@"
 }
