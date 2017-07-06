@@ -91,8 +91,8 @@ retrieve() {
 validate() {
   if [ "x${checksum}" != "x" ] ; then
     checksum=$(echo ${checksum} | sed 's/^sha256://')
-    echo CK=$checksum
-    echo "${checksum}  ${tmpfile}" | sha256sum -c -
+    echo "CK=$checksum" 1>&2
+    echo "${checksum}  ${tmpfile}" | sha256sum -c - 1>&2
   fi
 }
 
@@ -102,8 +102,6 @@ launch() {
   if [ "x${cmd}" = "x" ] ; then
     chmod 0755 "${tmpfile}"
   fi
-
-  echo ""
 
   ${cmd} "${tmpfile}" "$@"
 }
