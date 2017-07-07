@@ -41,6 +41,7 @@ while [ "$#" -gt 0 ] ; do
       break
       ;;
     *)
+      shift
       break
       ;;
   esac
@@ -52,6 +53,15 @@ if command -v mktemp >/dev/null 2>/dev/null ; then
 else
   # fallback
   tmpfile=${TMPDIR:-/tmp}/runck-$$-$(date +%S)
+fi
+
+if [ -t 0 ]; then
+    if [ "x${url}" = "x" ]; then
+        echo "Interactive mode and no url was specified"
+        echo ""
+        printUsage
+        exit 1
+    fi
 fi
 
 cleanup() {
@@ -81,8 +91,8 @@ retrieve() {
 validate() {
   if [ "x${checksum}" != "x" ] ; then
     checksum=$(echo ${checksum} | sed 's/^sha256://')
-    echo CK=$checksum
-    echo "${checksum}  ${tmpfile}" | sha256sum -c -
+    echo "CK=$checksum" 1>&2
+    echo "${checksum}  ${tmpfile}" | sha256sum -c - 1>&2
   fi
 }
 
